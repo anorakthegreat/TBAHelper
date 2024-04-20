@@ -1,0 +1,82 @@
+.container {
+  width: 200px;
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  color: #314d3e;
+}
+
+/* Hide the default checkbox */
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  background: linear-gradient(to right, #ccc, #999); /* Gradient background */
+  border-radius: 34px;
+  transition: background-color 0.4s;
+}
+
+/* Style the slider thumb */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.4s, box-shadow 0.4s; /* Add transition for box-shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add box shadow */
+}
+
+/* Style the slider when checked */
+input:checked + .slider {
+  background: linear-gradient(to right, #4CAF50, #81c784); /* Change gradient colors */
+}
+
+/* Move the slider thumb to the right when checked */
+input:checked + .slider:before {
+  transform: translateX(26px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Change box shadow on checked */
+}
+
+/* Hover effect for slider thumb */
+.slider:before:hover {
+  transform: scale(1.1);
+}
+
+h2 {
+  text-align: center; /* Center the text */
+  color: #314d3e; /* Text color */
+  font-size: 24px; /* Adjust font size */
+  margin-bottom: 20px; /* Add some space below the heading */
+  transition: color 0.3s; /* Smooth color transition */
+}
+
+/* Hover effect */
+h2:hover {
+  color: #558b6e; /* Change text color on hover */
+}
+
+/* Animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+h2:hover {
+  animation: pulse 0.5s infinite alternate; /* Apply animation on hover */
+}
