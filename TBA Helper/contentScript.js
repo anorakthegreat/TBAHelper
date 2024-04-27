@@ -3,27 +3,572 @@ var trElements = document.querySelectorAll('tr');
 var divTeamInfo = document.getElementById('team-info');
 var divTeamTitle = document.getElementById('team-title');
 var teamSocial = document.getElementById('team-social-media');
+let tableArray = []
+
 
 chrome.storage.local.get('isOn', function(result) {
-    let isOnn = result.isOn
-    console.log('Retrieved variable from local storage:', isOnn);
-    console.log("I've BEEN CALLED")
-    console.log(document.location.href)
-    console.log(String(document.location.href).includes("/event/"))
-    if(isOnn){
+    // let isOnn = result.isOn
+
+    // if(isOnn){
         if( String(document.location.href).includes("/event/")){
             if( !String(document.location.href).includes("#event-insights") && !String(document.location.href).includes("#media") && !String(document.location.href).includes("#teams") && !String(document.location.href).includes("#awards")&& !String(document.location.href).includes("#rankings")){
+                editMatchHref()
+                getAllianceData()
+                reorder()
                 forEventPage()
                 test()
                 goToBracket()
+                console.log(tableArray)
 
 
             }
         }  else {
+            reorderTeamPage()
+
             forTeamPage()
+            editMatchHrefTeamPage()
+
+        }
+    // }
+
+
+
+
+    
+});
+
+async function getAllianceDataForTeamPage(url){
+  let bigArray = []
+  const response = await fetch(url)
+  const html = await response.text();
+
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+
+  let table = tempDiv.querySelector('#event-alliances');
+  let tbody = table.querySelector("tbody")
+  let trAllianceElements = tbody.querySelectorAll("tr")
+
+  trAllianceElements.forEach(tr => { 
+      // console.log(tr)
+      let allianceNumber = tr.querySelector("td")
+      // let i = 0
+      let alliance = []
+      let tds = tr.querySelectorAll("td")
+      // console.log("AHHH")
+      if(allianceNumber){
+          // console.log(allianceNumber)
+      }
+      tds.forEach(td => { 
+          if(!td.textContent.includes("Alliance") ){
+              let anchorElement = td.querySelector('a');
+              if(anchorElement){
+                alliance.push(td.textContent)
+
+              }
+          }
+
+      })
+      // console.log(alliance)
+      bigArray.push(alliance)
+
+  })
+  // tableMatch = alliance
+  return bigArray
+
+}
+
+async function reorderTeamPage(){
+  let teamNumber = document.getElementById("team-title").textContent.trim()
+  let secondSubstring = teamNumber.split(' ')[1];
+
+  let extractedNumber = secondSubstring.replace(/\D/g, '');
+
+ 
+  var divs = document.querySelectorAll('div');
+
+  for(let div of divs){
+    if(div.className == "row"){
+      if(!(div.id == "")){
+        let insideDivs = div.querySelectorAll("div")
+        for(let div2 of insideDivs){
+
+          let allData = []
+
+
+          let aaa
+
+
+          if(div2.className == "col-sm-4"){
+            let h3 = div2.querySelector("h3")
+            let a = h3.querySelector("a")
+            // console.log(a.href)
+            // console.log(await getAllianceDataForTeamPage(a.href))
+            aaaa = a.href
+            allData = await getAllianceDataForTeamPage(a.href)
+            
+          }
+
+          if(div2.className == "col-sm-8"){
+            let tbod = div2.querySelector("table > tbody")
+            // console.log(tbod)
+            let trs = tbod.querySelectorAll("tr")
+            // console.log(aaaa)
+            let allDatap = await getAllianceDataForTeamPage(aaaa)
+            console.log(allDatap)
+
+            trs.forEach((tr,index) => { 
+              let redOrder = []
+              let blueOrder = []
+
+              let indicator
+
+              let tds = tr.querySelectorAll("td")
+
+              if(tr.className != "key"){
+                if(tr.className == "hidden-lg"){
+                  // console.log("TRUE")
+                  // console.log(trs[index - 1].querySelectorAll("td")[1].textContent.trim())
+                  indicator = trs[index - 1].querySelectorAll("td")[1].textContent.trim()
+                  // console.log(tr)
+                }else{
+                  indicator = tr.querySelectorAll("td")[1].textContent.trim()
+                  // console.log(tr.querySelectorAll("td")[1].textContent.trim())
+
+                }
+              }
+              tds.forEach(td => { 
+                // console.log(indicator )
+                if(!indicator.includes("Quals")){
+                  if(!(td.className == "") && !(td.className.includes("Score"))){
+                    if(!(td.className == "") && !(td.className.includes("Score"))){
+                      let number = td.textContent.trim()
+                      for(let i = 0; i < allDatap.length; i++){
+    
+                        for(let z = 0; z < allDatap[i].length; z++){
+                          if(allDatap[i][z] == number){
+                            if(td.className.includes("red")){
+                              redOrder[z] = number
+                            } else{
+                              blueOrder[z] = number
+    
+                            }
+                          }
+                        }
+                      }
+    
+                    }
+                  }
+                }
+                // console.log(td)
+                
+                  
+                  // console.log(td)
+                // }
+              })
+                // if(redOrder.length > 1){
+                //   console.log(redOrder)
+                // }
+
+                // if(blueOrder.length > 1){
+                //   console.log(blueOrder)
+
+                // }
+
+                let i = 0
+                let z = 0
+                tds.forEach(td => { 
+                  if(!(td.className == "") && !(td.className.includes("Score")) && !indicator.includes("Quals")){
+                   if(td.className.includes("red")){
+                    if(redOrder[i] == undefined){
+                      let existingAnchorElement = td.querySelector('a');
+
+                      let existingHref = existingAnchorElement.href
+                      let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                      let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                      let newAnchorElement = document.createElement('a');
+                      newAnchorElement.href = '/team/' + redOrder[3] + "/" + year; // Set the href attribute of the new <a> element
+                      newAnchorElement.textContent = "*" + redOrder[3] + "*"; // Set the text content of the new <a> element
+                      newAnchorElement.setAttribute("target", "_blank");
+                      newAnchorElement.style.color = "red"
+
+                      // td.textContent = "*" + redOrder[3] +"*"
+                      if (existingAnchorElement) {
+                        td.replaceChild(newAnchorElement, existingAnchorElement);
+
+                        if (td.className.includes("current-team")) {
+                          // Replace the substring with an empty string
+                          td.className = td.className.replace("current-team", '');
+                        }
+
+                        if(redOrder[3] == extractedNumber){
+                          td.className = td.className + " current-team "
+                        }
+
+                      }
+                      i++
+                    } else{
+                      let existingAnchorElement = td.querySelector('a');
+                      let existingHref = existingAnchorElement.href
+                      let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                      let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                      let newAnchorElement = document.createElement('a');
+                      newAnchorElement.href = '/team/' + redOrder[i] + "/" + year; // Set the href attribute of the new <a> element
+                      newAnchorElement.textContent = redOrder[i]; // Set the text content of the new <a> element
+                      newAnchorElement.setAttribute("target", "_blank");
+
+                      // td.textContent = "*" + redOrder[3] +"*"
+                      if (existingAnchorElement) {
+                        td.replaceChild(newAnchorElement, existingAnchorElement);
+                        if (td.className.includes("current-team")) {
+                          // Replace the substring with an empty string
+                          td.className = td.className.replace("current-team", '');
+                        }
+
+                        if(redOrder[i] == extractedNumber){
+                          td.className = td.className + " current-team "
+                        }
+                      }
+                      i++
+
+                    }
+                   }else if(td.className.includes("blue")){
+                    if(blueOrder[z] == undefined){
+
+                      let existingAnchorElement = td.querySelector('a');
+                      let existingHref = existingAnchorElement.href
+                      let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                      let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                      let newAnchorElement = document.createElement('a');
+                      newAnchorElement.href = '/team/' + blueOrder[3] + "/" + year; // Set the href attribute of the new <a> element
+                      newAnchorElement.textContent = "*" + blueOrder[3] + "*"; // Set the text content of the new <a> element
+                      newAnchorElement.setAttribute("target", "_blank");
+                      newAnchorElement.style.color = "red"
+
+                      // td.textContent = "*" + redOrder[3] +"*"
+                      if (existingAnchorElement) {
+                        td.replaceChild(newAnchorElement, existingAnchorElement);
+
+                        if (td.className.includes("current-team")) {
+                          // Replace the substring with an empty string
+                          td.className = td.className.replace("current-team", '');
+                        }
+
+                        if(blueOrder[3] == extractedNumber){
+                          td.className = td.className + " current-team "
+                        }
+
+                      }
+                      z++
+                    } else{
+
+                      let existingAnchorElement = td.querySelector('a');
+                      let existingHref = existingAnchorElement.href
+                      let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                      let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                      let newAnchorElement = document.createElement('a');
+                      newAnchorElement.href = '/team/' + blueOrder[z] + "/" + year; // Set the href attribute of the new <a> element
+                      newAnchorElement.textContent = blueOrder[z]; // Set the text content of the new <a> element
+                      newAnchorElement.setAttribute("target", "_blank");
+
+                      // td.textContent = "*" + redOrder[3] +"*"
+                      if (existingAnchorElement) {
+                        td.replaceChild(newAnchorElement, existingAnchorElement);
+
+                        if (td.className.includes("current-team")) {
+                          // Replace the substring with an empty string
+                          td.className = td.className.replace("current-team", '');
+                        }
+                        
+                        if(blueOrder[z] == extractedNumber){
+                          td.className = td.className + " current-team "
+                        }
+                        
+                      }
+                      z++
+
+                    }
+                   }
+
+                  }
+
+               })
+
+
+            })
+          }
+        }
+
+      }
+
+    }
+  }
+
+}
+
+async function editMatchHrefTeamPage(){
+  for (const tr of trElements) {
+    if(!(tr.className.includes("key"))){
+      // console.log(tr)
+      tdElements = tr.querySelectorAll("td")
+
+      for (const td of tdElements) {  
+        let anchorElement = td.querySelector('a');
+        if(anchorElement){
+          if(anchorElement.title == "Watch video"){
+            console.log(td)
+            let hrefAttributeValue = anchorElement.getAttribute('href');
+            let youtube = await fetchDataAndExtractDivs("https://www.thebluealliance.com" + hrefAttributeValue, "a")
+            anchorElement.href = youtube
+            anchorElement.setAttribute('target', '_blank');
+
+          }
+        }
+        
+      }
+
+    }
+  }
+}
+
+async function editMatchHref(){
+    for (const tr of trElements) {
+        let className = tr.className;
+        if (className == "visible-lg") {
+            let firstTD = tr.querySelector("td")
+            let a = firstTD.querySelector("a")
+            if (a) {
+                let hrefAttributeValue = a.getAttribute('href');
+
+                // Await the asynchronous function call within the async function
+                let youtube = await fetchDataAndExtractDivs("https://www.thebluealliance.com" + hrefAttributeValue, "a")
+                // console.log(youtube)
+                a.href = youtube
+                a.setAttribute('target', '_blank');
+            }
         }
     }
-  });
+
+}
+
+function getAllianceData(){
+    let table = document.getElementById('event-alliances');
+    let tbody = table.querySelector("tbody")
+    let trAllianceElements = tbody.querySelectorAll("tr")
+
+    trAllianceElements.forEach(tr => { 
+        // console.log(tr)
+        let allianceNumber = tr.querySelector("td")
+        // let i = 0
+        let alliance = []
+        let tds = tr.querySelectorAll("td")
+        // console.log("AHHH")
+        if(allianceNumber){
+            // console.log(allianceNumber)
+        }
+        tds.forEach(td => { 
+            if(!td.textContent.includes("Alliance") ){
+                let anchorElement = td.querySelector('a');
+                if(anchorElement){
+                  alliance.push(td.textContent)
+
+                }
+            }
+
+        })
+        // console.log(alliance)
+        tableArray.push(alliance)
+
+    })
+    // tableMatch = alliance
+
+
+}
+
+function reorder(){
+    let className = 'col-sm-6'; // Replace 'yourClassName' with the specific class name you want to query for
+    let divsWithClassName = document.querySelectorAll(`div.${className}`);
+
+    divsWithClassName.forEach(divs => {
+        tables = divs.querySelectorAll("table")
+
+        tables.forEach(table => { 
+            if(table.id == "elim-match-table"){
+                tbody = table.querySelector("tbody")
+
+                let trs = tbody.querySelectorAll("tr")
+
+                trs.forEach(tr => { 
+                    // console.log("THIS IS THE TR")
+                    let redOrder = []
+                    let blueOrder = []
+
+                    // if(tr.className.includes("hidden")){
+                        let tds = tr.querySelectorAll("td")
+                        tds.forEach(td => { 
+                           if(!(td.className == "") && !(td.className.includes("Score"))){
+                              let number = td.textContent.trim()
+                              for(let i = 0; i < tableArray.length; i++){
+                                for(let z = 0; z < tableArray[i].length; z++){
+                                  if(tableArray[i][z] == number){
+                                    if(td.className.includes("red")){
+                                      redOrder[z] = number
+                                    } else{
+                                      blueOrder[z] = number
+
+                                    }
+                                  }
+                                }
+                              }
+
+                           }
+
+                        })
+                        let i = 0
+                        let z = 0
+                        tds.forEach(td => { 
+                          if(!(td.className == "") && !(td.className.includes("Score"))){
+                           if(td.className.includes("red")){
+                            if(redOrder[i] == undefined){
+                              let existingAnchorElement = td.querySelector('a');
+
+                              let existingHref = existingAnchorElement.href
+                              let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                              let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                              let newAnchorElement = document.createElement('a');
+                              newAnchorElement.href = '/team/' + redOrder[3] + "/" + year; // Set the href attribute of the new <a> element
+                              newAnchorElement.textContent = "*" + redOrder[3] + "*"; // Set the text content of the new <a> element
+                              newAnchorElement.setAttribute("target", "_blank");
+                              newAnchorElement.style.color = "red"
+
+                              // td.textContent = "*" + redOrder[3] +"*"
+                              if (existingAnchorElement) {
+                                td.replaceChild(newAnchorElement, existingAnchorElement);
+
+                              }
+                              i++
+                            } else{
+                              let existingAnchorElement = td.querySelector('a');
+                              let existingHref = existingAnchorElement.href
+                              let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                              let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                              let newAnchorElement = document.createElement('a');
+                              newAnchorElement.href = '/team/' + redOrder[i] + "/" + year; // Set the href attribute of the new <a> element
+                              newAnchorElement.textContent = redOrder[i]; // Set the text content of the new <a> element
+                              newAnchorElement.setAttribute("target", "_blank");
+
+                              // td.textContent = "*" + redOrder[3] +"*"
+                              if (existingAnchorElement) {
+                                td.replaceChild(newAnchorElement, existingAnchorElement);
+
+                              }
+                              i++
+
+                            }
+                           }else if(td.className.includes("blue")){
+                            if(blueOrder[z] == undefined){
+
+                              let existingAnchorElement = td.querySelector('a');
+                              let existingHref = existingAnchorElement.href
+                              let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                              let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                              let newAnchorElement = document.createElement('a');
+                              newAnchorElement.href = '/team/' + blueOrder[3] + "/" + year; // Set the href attribute of the new <a> element
+                              newAnchorElement.textContent = "*" + blueOrder[3] + "*"; // Set the text content of the new <a> element
+                              newAnchorElement.setAttribute("target", "_blank");
+                              newAnchorElement.style.color = "red"
+
+                              // td.textContent = "*" + redOrder[3] +"*"
+                              if (existingAnchorElement) {
+                                td.replaceChild(newAnchorElement, existingAnchorElement);
+
+                              }
+                              z++
+                            } else{
+
+                              let existingAnchorElement = td.querySelector('a');
+                              let existingHref = existingAnchorElement.href
+                              let parts = existingHref.split('/'); // Split the string into an array based on '/'
+                              let year = parts[parts.length - 1]; // Get the last element of the arra
+
+                              let newAnchorElement = document.createElement('a');
+                              newAnchorElement.href = '/team/' + blueOrder[z] + "/" + year; // Set the href attribute of the new <a> element
+                              newAnchorElement.textContent = blueOrder[z]; // Set the text content of the new <a> element
+                              newAnchorElement.setAttribute("target", "_blank");
+
+                              // td.textContent = "*" + redOrder[3] +"*"
+                              if (existingAnchorElement) {
+                                td.replaceChild(newAnchorElement, existingAnchorElement);
+                                
+                              }
+                              z++
+
+                            }
+                           }
+
+                          }
+
+                       })
+                      // console.log(redOrder)
+                      // console.log(blueOrder)
+
+                    // }
+                })
+
+            }
+        })
+
+    }) 
+
+}
+
+
+
+async function fetchDataAndExtractDivs(url, targetId) {
+    targetId = "youtube"
+
+
+            const response = await fetch(url);
+            const html = await response.text();
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            // return "bleh"
+
+            const divsWithId = tempDiv.querySelectorAll(`div[id*="${targetId}"]`);
+            // let url = 
+            if (divsWithId.length > 0) {
+
+                // Loop through the matched divs and log or manipulate them
+                // divsWithId.forEach(div => {
+                for(const div of divsWithId){
+                    let idAttributeValue = div.getAttribute('id');
+                    let modifiedString = idAttributeValue.replace("youtube_", "");
+                    return "https://www.youtube.com/watch?v=" + modifiedString
+                    // console.log("IM HERE")
+                    // return ("IM HERE")
+
+                }
+
+                
+                // });
+            } else {
+                console.error(`No divs containing ID "${targetId}" found`);
+            }
+
+            // })
+        
+        
+}
+
+
 
 function goToBracket(){
   const h3Elements = document.querySelectorAll('h3');
@@ -80,7 +625,7 @@ if (commonAncestor) {
   // Add event listener to the common ancestor
   commonAncestor.addEventListener('mouseover', function(event) {
 //    console.log(event.target.tagName)
-  console.log("IN")
+  // console.log("IN")
 
    if (event.target.tagName === 'TD') {
     if(event.target.textContent.includes("-")){
@@ -160,7 +705,7 @@ if (commonAncestor) {
               }
       })
     } else {
-      console.log("I REJECTED IT")
+      // console.log("I REJECTED IT")
     }
     
 
@@ -170,7 +715,7 @@ if (commonAncestor) {
 
   // Add event listener to reset the hover effect on mouseout
   commonAncestor.addEventListener('mouseout', function(event) {
-    console.log("OUT")
+    // console.log("OUT")
     // event.target.style.backgroundColor = '';
     ahh("OVERRIDE", false)
 
