@@ -7,9 +7,9 @@ let tableArray = []
 
 
 chrome.storage.local.get('isOn', function(result) {
-    // let isOnn = result.isOn
+    let isOnn = result.isOn
 
-    // if(isOnn){
+    if(isOnn){
         if( String(document.location.href).includes("/event/")){
             if( !String(document.location.href).includes("#event-insights") && !String(document.location.href).includes("#media") && !String(document.location.href).includes("#teams") && !String(document.location.href).includes("#awards")&& !String(document.location.href).includes("#rankings")){
                 editMatchHref()
@@ -18,7 +18,7 @@ chrome.storage.local.get('isOn', function(result) {
                 forEventPage()
                 test()
                 goToBracket()
-                console.log(tableArray)
+                // console.log(tableArray)
 
 
             }
@@ -29,7 +29,7 @@ chrome.storage.local.get('isOn', function(result) {
             editMatchHrefTeamPage()
 
         }
-    // }
+    }
 
 
 
@@ -115,7 +115,7 @@ async function reorderTeamPage(){
             let trs = tbod.querySelectorAll("tr")
             // console.log(aaaa)
             let allDatap = await getAllianceDataForTeamPage(aaaa)
-            console.log(allDatap)
+            // console.log(allDatap)
 
             trs.forEach((tr,index) => { 
               let redOrder = []
@@ -315,15 +315,18 @@ async function editMatchHrefTeamPage(){
     if(!(tr.className.includes("key"))){
       // console.log(tr)
       tdElements = tr.querySelectorAll("td")
-
+      // console.log(tr)
       for (const td of tdElements) {  
         let anchorElement = td.querySelector('a');
         if(anchorElement){
           if(anchorElement.title == "Watch video"){
-            console.log(td)
+            // console.log(td)
             let hrefAttributeValue = anchorElement.getAttribute('href');
             let youtube = await fetchDataAndExtractDivs("https://www.thebluealliance.com" + hrefAttributeValue, "a")
-            anchorElement.href = youtube
+            anchorElement.href = ''
+            anchorElement.onclick = function(){
+                  opener(youtube)
+            }
             anchorElement.setAttribute('target', '_blank');
 
           }
@@ -335,20 +338,37 @@ async function editMatchHrefTeamPage(){
   }
 }
 
+function opener(urls){
+  console.log(urls)
+  urls.forEach(function(url) {
+    window.open(url, '_blank');
+});
+// console.log("AHHHHHHHHHHHHHHHHHHHHHHH")
+}
+
 async function editMatchHref(){
+    let i = 0
     for (const tr of trElements) {
         let className = tr.className;
         if (className == "visible-lg") {
             let firstTD = tr.querySelector("td")
             let a = firstTD.querySelector("a")
             if (a) {
-                let hrefAttributeValue = a.getAttribute('href');
+
+              // console.log(tr)
+              let hrefAttributeValue = a.getAttribute('href');
 
                 // Await the asynchronous function call within the async function
                 let youtube = await fetchDataAndExtractDivs("https://www.thebluealliance.com" + hrefAttributeValue, "a")
                 // console.log(youtube)
-                a.href = youtube
-                a.setAttribute('target', '_blank');
+                a.href = ''
+                a.onclick = function(){
+                  opener(youtube)
+                }
+              
+                
+              
+                
             }
         }
     }
@@ -548,16 +568,17 @@ async function fetchDataAndExtractDivs(url, targetId) {
 
                 // Loop through the matched divs and log or manipulate them
                 // divsWithId.forEach(div => {
+                let arr = []
                 for(const div of divsWithId){
                     let idAttributeValue = div.getAttribute('id');
                     let modifiedString = idAttributeValue.replace("youtube_", "");
-                    return "https://www.youtube.com/watch?v=" + modifiedString
+                    arr.push("https://www.youtube.com/watch?v=" + modifiedString)
                     // console.log("IM HERE")
                     // return ("IM HERE")
 
                 }
 
-                
+                return arr
                 // });
             } else {
                 console.error(`No divs containing ID "${targetId}" found`);
@@ -787,7 +808,9 @@ function ahh(string, isHighlighting){
                             
 
                             td.style.backgroundColor = 'lightblue';
-                            td.style.boxShadow = '0 0 5px rgba(0, 0, 0, 5)';
+                            td.style.filter = 'drop-shadow(0 0 7px rgba(0, 0, 0, 0.5))';
+                            // td.style.webkitBoxShadow = '0 0 5px rgba(0, 0, 0, 5)'; 
+                            // td.style.mozBoxShadow = '0 0 5px rgba(0, 0, 0, 5)';
                             td.style.transform = 'translateY(-2px)';
 
                             if(winner){
@@ -819,6 +842,7 @@ function ahh(string, isHighlighting){
                             td.style.backgroundColor = '';
                             td.style.transform = '';
                             td.style.boxShadow = '';
+                            td.style.filter = '';
 
                             // console.log("I SET IT BACK")
 
