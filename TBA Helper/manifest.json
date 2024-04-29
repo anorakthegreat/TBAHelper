@@ -1,9 +1,8 @@
 {
-    "name": "My YT Bookmarks",
+    "name": "TBACompanion",
     "version": "0.1.0",
-    "description": "Saving timestamps in YT videos",
+    "description": "A chrome extension to level up your TBA Expirience!",
     "permissions": ["storage", "tabs", "activeTab", "scripting"],
-    "host_permissions": ["https://www.thebluealliance.com/*"],
     "content_scripts": [
       {
         "matches": [
@@ -27,9 +26,9 @@
     ],
     "action": {
       "default_icon": {
-        "16": "assets/ext-icon.png",
-        "24": "assets/ext-icon.png",
-        "32": "assets/ext-icon.png"
+        "16": "assets/logo.png",
+        "24": "assets/logo.png",
+        "32": "assets/logo.png"
       },
       "default_title": "My YT Bookmarks",
       "default_popup": "popup.html"
